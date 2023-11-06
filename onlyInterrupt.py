@@ -17,16 +17,6 @@ GPIO.setup(tachInputPin, GPIO.IN, GPIO.PUD_DOWN)
 fps = 3 #must be at least 2
 dt = datetime.now()
 
-
-###### Set up TPS ADC
-# Default gain is 1, for +/-4.096V. Because the ADS1115 is powered at 3.3v,
-# max actual input is 3.6v
-GAIN = 1
-adc = Adafruit_ADS1x15.ADS1115()
-TPS_0_PERCENT = 800
-TPS_100_PERCENT = 5650
-TPS_RANGE = TPS_100_PERCENT - TPS_0_PERCENT
-
 # every time there's a pulse, this calculates the rpm and sets g_rpm
 def pulseInterrupt(channel):
     global dt
@@ -55,14 +45,20 @@ def simulateRPMchange():
 #simulateRPMchange()
 
 
-##### main loop
-#while True:
-#    print(g_rpm)
+###### Set up TPS ADC
+# Default gain is 1, for +/-4.096V. Because the ADS1115 is powered at 3.3v,
+# max actual input is 3.6v
+GAIN = 1
+adc = Adafruit_ADS1x15.ADS1115()
+TPS_0_PERCENT = 800
+TPS_100_PERCENT = 5650
+TPS_RANGE = TPS_100_PERCENT - TPS_0_PERCENT
 
-print('time, rpm')
+# set up csv header 
+print('time, rpm, throttle')
 startTime = datetime.now()
-def printRow():
-    
+
+def printRow():    
     runningSeconds = (datetime.now()-startTime).total_seconds()
     tpsRawValue = adc.read_adc(0, gain=GAIN)
     if tpsRawValue < TPS_0_PERCENT:
