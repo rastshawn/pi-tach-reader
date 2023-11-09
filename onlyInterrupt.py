@@ -55,8 +55,22 @@ TPS_100_PERCENT = 5650
 TPS_RANGE = TPS_100_PERCENT - TPS_0_PERCENT
 
 # set up csv header 
-print('time, rpm, throttle')
+stringBuffer = []
+headerString = 'time, rpm, throttle'
+stringBuffer.append(headerString + '\n')
+BATCH_LENGTH = 20
+filename = 'output.csv'
+print(headerString)
 startTime = datetime.now()
+
+def addToWriteQueue(string):
+    global stringBuffer
+    stringBuffer.append(string)
+    if len(stringBuffer) > BATCH_LENGTH:
+        with open(filename, 'a') as f:
+            stringToWrite = ''.join(stringBuffer)
+            f.write(stringToWrite)
+            stringBuffer = []
 
 def printRow():    
     runningSeconds = (datetime.now()-startTime).total_seconds()
@@ -68,7 +82,10 @@ def printRow():
     tpsRangedValue = tpsRawValue - TPS_0_PERCENT
 
     tpsPercent = 100 * (tpsRangedValue / TPS_RANGE)  # todo. Maybe autoset max and min?
-    print(f'{(datetime.now()-startTime).total_seconds()}, {g_rpm}, {tpsPercent}')
+    
+    rowString = f'{(datetime.now()-startTime).total_seconds()}, {g_rpm}, {tpsPercent}'
+    print(rowString)
+    addToWriteQueue(rowString + '\n')
     threading.Timer(0.05, printRow).start()
     
 printRow()
