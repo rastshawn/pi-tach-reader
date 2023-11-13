@@ -59,9 +59,40 @@ stringBuffer = []
 headerString = 'time, rpm, throttle'
 stringBuffer.append(headerString + '\n')
 BATCH_LENGTH = 20
-filename = 'output.csv'
+outputFolder = 'output'
 print(headerString)
 startTime = datetime.now()
+
+# Read the output folder to sequentially create filenames for the current session
+# Creates the outputfolder if it doesn't exist
+# Creates "Run_(n+1).csv" if "Run_(n).csv" exists.
+# Creates "Run_1.csv" if none are found.
+def getNextFilename(outputFolder):
+    # Check if the output folder exists, if not, create it
+    if not os.path.exists(outputFolder):
+        os.makedirs(outputFolder)
+
+    # Get the list of existing files in the output folder
+    existingFiles = [f for f in os.listdir(outputFolder) if os.path.isfile(os.path.join(outputFolder, f))]
+
+    # Find the highest number from existing file list
+    maxRunNumber = 0
+    for filename in existingFiles:
+        if filename.startswith("Run_") and filename.endswith(".csv"):
+            try:
+                runNumber = int(filename.split("_")[1].split(".")[0])
+                maxRunNumber = max(maxRunNumber, runNumber)
+            except ValueError:
+                pass  # Ignore filenames that don't match the expected pattern
+
+    # Increment the run number for the new file
+    nextRunNumber = maxRunNumber + 1
+
+    # Construct the new filename
+    newFilename = f"Run_{nextRunNumber}.csv"
+    return os.path.join(outputFolder, newFilename)
+
+filename = getNextFilename(outputFolder)
 
 def addToWriteQueue(string):
     global stringBuffer
